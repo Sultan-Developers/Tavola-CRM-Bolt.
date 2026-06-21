@@ -47,7 +47,7 @@ export function SendCampaignDialog({ campaign, customers, business, onSent, onCl
   const [sending, setSending] = useState(false)
   const [sentIds, setSentIds] = useState<Set<string>>(new Set())
 
-  const eligibleCustomers = customers.filter((c) => c.consent_status !== 'no')
+  const eligibleCustomers = customers.filter((c) => c.consent_status !== 'denied')
 
   async function markSent() {
     if (sentIds.size === 0) {
@@ -114,7 +114,7 @@ export function SendCampaignDialog({ campaign, customers, business, onSent, onCl
                       business.name,
                       business.google_review_url ?? ''
                     )
-                    const waLink = buildWaLink(c.phone, message)
+                    const waLink = buildWaLink(c.phone ?? '', message)
                     const opened = sentIds.has(c.id)
 
                     return (
@@ -124,11 +124,11 @@ export function SendCampaignDialog({ campaign, customers, business, onSent, onCl
                         <TableCell>
                           <Badge
                             className={
-                              c.consent_status === 'yes'
+                              c.consent_status === 'granted'
                                 ? 'bg-green-500/15 text-green-700 border border-green-200'
                                 : ''
                             }
-                            variant={c.consent_status === 'yes' ? undefined : 'secondary'}
+                            variant={c.consent_status === 'granted' ? undefined : 'secondary'}
                           >
                             {c.consent_status}
                           </Badge>

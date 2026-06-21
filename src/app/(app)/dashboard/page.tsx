@@ -70,7 +70,7 @@ export default async function DashboardPage() {
 
   const active = isSubscriptionActive(subscription)
   const isExpired = !active
-  const isSuspended = business.status === 'suspended'
+  const isSuspended = subscription?.status === 'suspended'
 
   const subStatusLabel = isSuspended
     ? 'Suspended'

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { isReadOnly } from '@/lib/auth'
+import { isReadOnly } from '@/lib/subscription'
 import { CampaignsClient } from './CampaignsClient'
 import { Business, Subscription, Profile } from '@/types'
 
@@ -28,7 +28,7 @@ export default async function CampaignsPage() {
     .eq('business_id', biz.id)
     .maybeSingle()
 
-  const readOnly = isReadOnly(subscription as Subscription | null, biz.status)
+  const readOnly = isReadOnly(subscription as Subscription | null)
 
   const [{ data: campaigns }, { data: customers }] = await Promise.all([
     supabase
@@ -47,7 +47,7 @@ export default async function CampaignsPage() {
   return (
     <CampaignsClient
       initialCampaigns={campaigns ?? []}
-      customers={(customers ?? []) as { id: string; name: string; phone: string; consent_status: 'yes' | 'no' | 'pending' }[]}
+      customers={(customers ?? []) as { id: string; name: string; phone: string; consent_status: 'granted' | 'denied' | 'unknown' }[]}
       business={biz}
       readOnly={readOnly}
     />

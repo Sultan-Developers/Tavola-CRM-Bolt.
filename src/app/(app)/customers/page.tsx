@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { isReadOnly } from '@/lib/auth'
+import { isReadOnly } from '@/lib/subscription'
 import { CustomersClient } from './CustomersClient'
 import { Business, Subscription, Profile } from '@/types'
 
@@ -28,7 +28,7 @@ export default async function CustomersPage() {
     .eq('business_id', biz.id)
     .maybeSingle()
 
-  const readOnly = isReadOnly(subscription as Subscription | null, biz.status)
+  const readOnly = isReadOnly(subscription as Subscription | null)
 
   const { data: customers } = await supabase
     .from('customers')

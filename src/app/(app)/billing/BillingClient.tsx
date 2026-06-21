@@ -57,7 +57,7 @@ export function BillingClient({ business, subscription, initialPayments }: Props
 
   const active = isSubscriptionActive(subscription)
 
-  const subStatusLabel = business.status === 'suspended'
+  const subStatusLabel = subscription?.status === 'suspended'
     ? 'Suspended'
     : subscription?.status === 'trial'
     ? 'Trial'
@@ -66,7 +66,7 @@ export function BillingClient({ business, subscription, initialPayments }: Props
     : 'Expired'
 
   const subStatusVariant: 'default' | 'secondary' | 'destructive' =
-    business.status === 'suspended' || !active
+    subscription?.status === 'suspended' || !active
       ? 'destructive'
       : subscription?.status === 'trial'
       ? 'secondary'

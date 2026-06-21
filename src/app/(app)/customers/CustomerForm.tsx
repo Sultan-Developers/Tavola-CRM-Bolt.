@@ -26,7 +26,7 @@ const schema = z.object({
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   birthday: z.string().optional(),
   notes: z.string().optional(),
-  consent_status: z.enum(['yes', 'no', 'pending']),
+  consent_status: z.enum(['granted', 'denied', 'unknown']),
 })
 
 type FormData = z.infer<typeof schema>
@@ -54,7 +54,7 @@ export function CustomerForm({ businessId, customer, onSaved, onCancel }: Props)
       email: customer?.email ?? '',
       birthday: customer?.birthday ?? '',
       notes: customer?.notes ?? '',
-      consent_status: customer?.consent_status ?? 'pending',
+      consent_status: customer?.consent_status ?? 'unknown',
     },
   })
 
@@ -141,16 +141,16 @@ export function CustomerForm({ businessId, customer, onSaved, onCancel }: Props)
         <div className="space-y-1">
           <Label>Consent</Label>
           <Select
-            defaultValue={customer?.consent_status ?? 'pending'}
-            onValueChange={(v) => setValue('consent_status', v as 'yes' | 'no' | 'pending')}
+            defaultValue={customer?.consent_status ?? 'unknown'}
+            onValueChange={(v) => setValue('consent_status', v as 'granted' | 'denied' | 'unknown')}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="yes">Yes</SelectItem>
-              <SelectItem value="no">No</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="granted">Granted</SelectItem>
+              <SelectItem value="denied">Denied</SelectItem>
+              <SelectItem value="unknown">Unknown</SelectItem>
             </SelectContent>
           </Select>
         </div>

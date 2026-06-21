@@ -56,7 +56,7 @@ export function CustomersClient({ initialCustomers, businessId, readOnly }: Prop
     return customers.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
-        c.phone.includes(q) ||
+        (c.phone ?? '').includes(q) ||
         (c.email ?? '').toLowerCase().includes(q)
     )
   }, [customers, search])
@@ -150,11 +150,11 @@ export function CustomersClient({ initialCustomers, businessId, readOnly }: Prop
             email: row['Email'] || row['email'] || null,
             birthday: row['Birthday'] || row['birthday'] || null,
             notes: row['Notes'] || row['notes'] || null,
-            consent_status: (['yes', 'no', 'pending'].includes(
+            consent_status: (['granted', 'denied', 'unknown'].includes(
               (row['Consent Status'] || '').toLowerCase()
             )
               ? row['Consent Status'].toLowerCase()
-              : 'pending'),
+              : 'unknown'),
           })
 
           if (error) errorCount++
@@ -179,9 +179,9 @@ export function CustomersClient({ initialCustomers, businessId, readOnly }: Prop
   }
 
   const consentBadge = (status: string) => {
-    if (status === 'yes') return <Badge className="bg-green-500/15 text-green-700 border border-green-200">Yes</Badge>
-    if (status === 'no') return <Badge variant="destructive">No</Badge>
-    return <Badge variant="secondary">Pending</Badge>
+    if (status === 'granted') return <Badge className="bg-green-500/15 text-green-700 border border-green-200">Granted</Badge>
+    if (status === 'denied') return <Badge variant="destructive">Denied</Badge>
+    return <Badge variant="secondary">Unknown</Badge>
   }
 
   return (

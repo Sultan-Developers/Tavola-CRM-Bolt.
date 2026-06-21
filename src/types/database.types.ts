@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           id: string
           full_name: string
+          email: string | null
           avatar_url: string | null
           role: 'business_owner' | 'super_admin'
           created_at: string
@@ -21,6 +22,7 @@ export type Database = {
         Insert: {
           id: string
           full_name?: string
+          email?: string | null
           avatar_url?: string | null
           role?: 'business_owner' | 'super_admin'
           created_at?: string
@@ -29,6 +31,7 @@ export type Database = {
         Update: {
           id?: string
           full_name?: string
+          email?: string | null
           avatar_url?: string | null
           role?: 'business_owner' | 'super_admin'
           updated_at?: string
@@ -42,7 +45,6 @@ export type Database = {
           type: 'hotel' | 'restaurant' | 'cafe' | 'other'
           phone: string | null
           google_review_url: string | null
-          status: 'active' | 'suspended'
           created_at: string
           updated_at: string
         }
@@ -53,7 +55,6 @@ export type Database = {
           type?: 'hotel' | 'restaurant' | 'cafe' | 'other'
           phone?: string | null
           google_review_url?: string | null
-          status?: 'active' | 'suspended'
           created_at?: string
           updated_at?: string
         }
@@ -62,7 +63,6 @@ export type Database = {
           type?: 'hotel' | 'restaurant' | 'cafe' | 'other'
           phone?: string | null
           google_review_url?: string | null
-          status?: 'active' | 'suspended'
           updated_at?: string
         }
       }
@@ -99,11 +99,12 @@ export type Database = {
           id: string
           business_id: string
           name: string
-          phone: string
+          phone: string | null
           email: string | null
           birthday: string | null
           notes: string | null
-          consent_status: 'yes' | 'no' | 'pending'
+          consent_status: 'granted' | 'denied' | 'unknown'
+          is_deleted: boolean
           deleted_at: string | null
           created_at: string
           updated_at: string
@@ -112,22 +113,24 @@ export type Database = {
           id?: string
           business_id: string
           name: string
-          phone: string
+          phone?: string | null
           email?: string | null
           birthday?: string | null
           notes?: string | null
-          consent_status?: 'yes' | 'no' | 'pending'
+          consent_status?: 'granted' | 'denied' | 'unknown'
+          is_deleted?: boolean
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           name?: string
-          phone?: string
+          phone?: string | null
           email?: string | null
           birthday?: string | null
           notes?: string | null
-          consent_status?: 'yes' | 'no' | 'pending'
+          consent_status?: 'granted' | 'denied' | 'unknown'
+          is_deleted?: boolean
           deleted_at?: string | null
           updated_at?: string
         }
@@ -138,25 +141,30 @@ export type Database = {
           business_id: string
           name: string
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           business_id: string
           name: string
           created_at?: string
+          updated_at?: string
         }
         Update: {
           name?: string
+          updated_at?: string
         }
       }
       customer_tag_relations: {
         Row: {
           customer_id: string
           tag_id: string
+          created_at: string
         }
         Insert: {
           customer_id: string
           tag_id: string
+          created_at?: string
         }
         Update: Record<string, never>
       }
@@ -170,6 +178,8 @@ export type Database = {
           status: 'draft' | 'sent' | 'deleted'
           sent_at: string | null
           recipient_count: number
+          is_deleted: boolean
+          deleted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -178,10 +188,12 @@ export type Database = {
           business_id: string
           name: string
           type?: 'review' | 'custom'
-          message_template: string
+          message_template?: string
           status?: 'draft' | 'sent' | 'deleted'
           sent_at?: string | null
           recipient_count?: number
+          is_deleted?: boolean
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -192,6 +204,8 @@ export type Database = {
           status?: 'draft' | 'sent' | 'deleted'
           sent_at?: string | null
           recipient_count?: number
+          is_deleted?: boolean
+          deleted_at?: string | null
           updated_at?: string
         }
       }
@@ -216,7 +230,7 @@ export type Database = {
           id?: string
           business_id: string
           subscription_id?: string | null
-          plan: 'monthly' | 'yearly'
+          plan?: 'monthly' | 'yearly'
           amount: number
           currency?: string
           screenshot_url?: string | null

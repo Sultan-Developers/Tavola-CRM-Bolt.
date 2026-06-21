@@ -13,7 +13,7 @@ export function isSubscriptionActive(sub: Subscription | null): boolean {
   return false
 }
 
-export function isReadOnly(sub: Subscription | null, businessStatus: string): boolean {
-  if (businessStatus === 'suspended') return true
+export function isReadOnly(sub: Subscription | null): boolean {
+  if (sub?.status === 'suspended') return true
   return !isSubscriptionActive(sub)
 }

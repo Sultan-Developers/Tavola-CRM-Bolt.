@@ -39,9 +39,8 @@ interface BusinessRow {
   name: string
   type: string
   phone: string | null
-  status: 'active' | 'suspended'
   created_at: string
-  subscriptions: { status: string; plan: string; ends_at: string | null }[] | null
+  subscriptions: { status: 'active' | 'expired' | 'suspended' | 'trial'; plan: string; ends_at: string | null }[] | null
 }
 
 interface PaymentRow {
@@ -86,22 +85,28 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
     setActioning(true)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = createClient() as any
-    const newStatus = suspendTarget.status === 'active' ? 'suspended' : 'active'
+    const newStatus = suspendTarget.subscriptions?.[0]?.status === 'suspended' ? 'active' : 'suspended'
 
     const { error } = await supabase
-      .from('businesses')
+      .from('subscriptions')
       .update({ status: newStatus })
-      .eq('id', suspendTarget.id)
+      .eq('business_id', suspendTarget.id)
 
     if (error) {
       toast.error(error.message)
     } else {
       setBusinesses((prev) =>
-        prev.map((b) =>
-          b.id === suspendTarget.id ? { ...b, status: newStatus as 'active' | 'suspended' } : b
-        )
+        prev.map((b) => {
+          if (b.id !== suspendTarget.id) return b
+          return {
+            ...b,
+            subscriptions: b.subscriptions
+              ? [{ ...b.subscriptions[0], status: newStatus }]
+              : [{ status: newStatus, plan: 'monthly', ends_at: null }],
+          }
+        })
       )
-      toast.success(`Business ${newStatus === 'suspended' ? 'suspended' : 'reactivated'}`)
+      toast.success(`Subscription ${newStatus === 'suspended' ? 'suspended' : 'reactivated'}`)
     }
 
     setActioning(false)
@@ -190,7 +195,7 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {businesses.filter((b) => b.status === 'active').length}
+              {businesses.filter((b) => b.subscriptions?.[0]?.status === 'active').length}
             </div>
           </CardContent>
         </Card>
@@ -200,7 +205,7 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              {businesses.filter((b) => b.status === 'suspended').length}
+              {businesses.filter((b) => b.subscriptions?.[0]?.status === 'suspended').length}
             </div>
           </CardContent>
         </Card>
@@ -248,8 +253,8 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
                     <TableCell className="font-medium">{biz.name}</TableCell>
                     <TableCell className="capitalize">{biz.type}</TableCell>
                     <TableCell>
-                      <Badge variant={biz.status === 'active' ? 'default' : 'destructive'}>
-                        {biz.status}
+                      <Badge variant={biz.subscriptions?.[0]?.status === 'active' ? 'default' : 'destructive'}>
+                        {biz.subscriptions?.[0]?.status ?? '—'}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -269,13 +274,13 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
                         variant="ghost"
                         size="sm"
                         className={
-                          biz.status === 'active'
+                          biz.subscriptions?.[0]?.status === 'active'
                             ? 'text-destructive hover:text-destructive'
                             : 'text-green-600 hover:text-green-600'
                         }
                         onClick={() => setSuspendTarget(biz)}
                       >
-                        {biz.status === 'active' ? (
+                        {biz.subscriptions?.[0]?.status === 'active' ? (
                           <><Ban className="mr-1 h-3.5 w-3.5" /> Suspend</>
                         ) : (
                           <><RotateCcw className="mr-1 h-3.5 w-3.5" /> Reactivate</>
@@ -422,10 +427,10 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {suspendTarget?.status === 'active' ? 'Suspend business?' : 'Reactivate business?'}
+              {suspendTarget?.subscriptions?.[0]?.status === 'active' ? 'Suspend business?' : 'Reactivate business?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {suspendTarget?.status === 'active'
+              {suspendTarget?.subscriptions?.[0]?.status === 'active'
                 ? `Suspending "${suspendTarget?.name}" will block all write actions.`
                 : `Reactivating "${suspendTarget?.name}" will restore normal access.`}
             </AlertDialogDescription>
@@ -436,12 +441,12 @@ export function AdminClient({ businesses: initialBusinesses, payments: initialPa
               onClick={handleSuspendToggle}
               disabled={actioning}
               className={
-                suspendTarget?.status === 'active'
+                suspendTarget?.subscriptions?.[0]?.status === 'active'
                   ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
                   : ''
               }
             >
-              {suspendTarget?.status === 'active' ? 'Suspend' : 'Reactivate'}
+              {suspendTarget?.subscriptions?.[0]?.status === 'active' ? 'Suspend' : 'Reactivate'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
