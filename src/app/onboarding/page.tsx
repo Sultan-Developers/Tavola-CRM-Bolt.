@@ -48,19 +48,39 @@ export default function OnboardingPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = createClient() as any
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    console.log('[onboarding] user:', user)
+    if (!user) { console.error('[onboarding] No user found'); router.push('/login'); return }
+
+    // Ensure profile exists before creating business
+    const { data: profileCheck } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle()
+    console.log('[onboarding] profile lookup:', profileCheck)
+    if (!profileCheck) {
+      console.log('[onboarding] Profile missing — creating one')
+      const { error: profileErr } = await supabase.from('profiles').insert({
+        id: user.id,
+        full_name: user.user_metadata?.full_name ?? '',
+        email: user.email,
+        role: 'business_owner',
+      }).select().single()
+      console.log('[onboarding] profile insert result:', profileErr ? profileErr.message : 'success')
+    }
+
+    const payload = {
+      owner_id: user.id,
+      name: data.name,
+      type: data.type,
+      phone: data.phone || null,
+      google_review_url: data.google_review_url || null,
+    }
+    console.log('[onboarding] business insert payload:', payload)
 
     const { data: business, error: bizError } = await supabase
       .from('businesses')
-      .insert({
-        owner_id: user.id,
-        name: data.name,
-        type: data.type,
-        phone: data.phone || null,
-        google_review_url: data.google_review_url || null,
-      })
+      .insert(payload)
       .select()
       .single()
+
+    console.log('[onboarding] business insert result:', bizError ? bizError.message : 'success')
 
     if (bizError) {
       toast.error(bizError.message)

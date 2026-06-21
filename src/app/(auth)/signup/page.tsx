@@ -40,7 +40,7 @@ export default function SignupPage() {
     setLoading(true)
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -48,10 +48,38 @@ export default function SignupPage() {
       },
     })
 
-    if (error) {
-      toast.error(error.message)
+    console.log('[signup] signUp response user:', signUpData?.user)
+
+    if (signUpError) {
+      toast.error(signUpError.message)
       setLoading(false)
       return
+    }
+
+    const user = signUpData?.user
+    if (!user) {
+      console.error('[signup] No user returned from signUp')
+      toast.error('Account created but user ID missing. Please log in.')
+      setLoading(false)
+      router.push('/login')
+      return
+    }
+
+    // Explicitly create profile since the auth trigger may not fire
+    const profilePayload = {
+      id: user.id,
+      full_name: data.full_name,
+      email: data.email,
+      role: 'business_owner',
+    }
+    console.log('[signup] profile insert payload:', profilePayload)
+    const { error: profileError } = await (supabase as any).from('profiles').insert(profilePayload)
+
+    console.log('[signup] profile insert result:', profileError ? 'error: ' + profileError.message : 'success')
+
+    if (profileError) {
+      console.error('[signup] profile insert error:', profileError)
+      // Continue anyway — try onboarding to create the profile there
     }
 
     toast.success('Account created! Setting up your business...')
